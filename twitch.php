@@ -1,17 +1,16 @@
 <?
-$channel_names = array("ceh9", "cheatbanned", "starladder5", "sharishaxd", "dreamhackcs");
-
 header("Content-Type:text/plain;charset=utf-8");
 
 echo "#EXTM3U\n";
 
+$channel_names = array("ceh9", "cheatbanned", "starladder5", "sharishaxd", "dreamhackcs");
 foreach($channel_names as $item)
 {
 	$status = getStreams($item);
 	if(!$status)
 		echo "#EXTINF:-1 mpeg4," . $item."(offline)\nhttp://offline\n";
 	else
-		echo "#EXTINF:-1 mpeg4," . $item."\n" . $status[0]["stream"] . "\n";
+		echo "#EXTINF:-1 mpeg4," . $item. " [". $status[0]["res"] . " " . $status[0]["bw"]."Mbit/s] " . "\n" . $status[0]["stream"] . "\n";
 }
 
 
@@ -29,9 +28,7 @@ function getStreams($channel_name)
 	$random = rand(0, 10000000);
 	$url_streams = "http://usher.twitch.tv/api/channel/hls/$channel_name.m3u8?player=twitchweb&token=$token&sig=$sig&\$allow_audio_only=true&allow_source=true&type=any&p=$random";
 	if(get_http_response_code($url_streams) != 200)
-	{
 		return false;
-	}
 	else
 	{
 		$streams = explode("\n", file_get_contents($url_streams));
@@ -42,8 +39,9 @@ function getStreams($channel_name)
 			{
 				$info = explode(",", $value);
 				$pl = explode("\"", $info[3]);
-				$video_name = $pl[1];
-				array_push($streams_res, array("name"=> $pl[1], "stream" => $streams[$key + 1]));
+				$bw = explode("=", $info[1]);
+				$res = explode("x", $info[2]);
+				array_push($streams_res, array("name"=> $pl[1], "res"=> $res[1] . "p", "bw" => round($bw[1] / 1048576, 1), "stream" => $streams[$key + 1]));
 			}
 		}
 		return $streams_res;
