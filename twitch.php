@@ -1,17 +1,20 @@
 <?
+// CONFIG
+$channel_names = array("ceh9", "cheatbanned", "starladder5", "sharishaxd", "dreamhackcs", "eleaguetv");
+define("CLIENT_ID", "o3tvos5r70b1u3njfhm2uz8rsrb6n9x");
+// CONFIG
+
 header("Content-Type:text/plain;charset=utf-8");
-
-echo "#EXTM3U\n";
-
-$channel_names = array("ceh9", "cheatbanned", "starladder5", "sharishaxd", "dreamhackcs");
-foreach($channel_names as $item)
-{
+$res = "#EXTM3U\n";
+foreach($channel_names as $item) {
 	$status = getStreams($item);
 	if(!$status)
-		echo "#EXTINF:-1 mpeg4," . $item."(offline)\nhttp://offline\n";
+		$res .= "#EXTINF:-1 mpeg4," . $item."(offline)\nhttp://offline\n";
 	else
-		echo "#EXTINF:-1 mpeg4," . $item. " [". $status[0]["res"] . " " . $status[0]["bw"]."Mbit/s] " . "\n" . $status[0]["stream"] . "\n";
+		$res .= "#EXTINF:-1 mpeg4," . $item. " [". $status[0]["res"] . " " . $status[0]["bw"]."Mbit/s] " . "\n" . $status[0]["stream"] . "\n";
 }
+
+echo $res;
 
 
 function get_http_response_code($url) {
@@ -21,7 +24,7 @@ function get_http_response_code($url) {
 
 function getStreams($channel_name)
 {
-	$token_content = json_decode(file_get_contents("http://api.twitch.tv/api/channels/".$channel_name."/access_token"));
+	$token_content = json_decode(file_get_contents("http://api.twitch.tv/api/channels/".$channel_name."/access_token?client_id=".CLIENT_ID));
 
 	$token = $token_content->token;
 	$sig = $token_content->sig;
